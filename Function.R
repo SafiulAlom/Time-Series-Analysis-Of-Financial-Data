@@ -27,8 +27,7 @@ NAtoNearestValue= function(a){
     if(is.na(a[i])) {a[i] = a[i-1]} #Last Observation Carried Forward
     else a[i] = a[i]
   }
-  return(a)
-  
+  return(a) 
 }
 
 
@@ -81,8 +80,6 @@ Auto.cf = function(series, lag, type = c('acf', 'pacf'), title = c('Acf/pacf plo
     
     return(list(lag = lag, pacf = roh, pacf.plot = acf.plot,
                 n.obs = paste("number of obs.:", length(series))))
-  
-        
     }
 }
 
@@ -150,13 +147,10 @@ test.ADF = function(series, lag.order){
 
 #arima model
 arima.model = function(series, order = c(1,0,1), add.mean = TRUE, method = c("CSS-ML", "ML", "CSS")){
-  
   fit = stats::arima(x = series, order= order, include.mean = add.mean, method = method)
-  
   n = length(series)
   k = length(coef(fit))
   rss = sum(fit$residuals^2)
-  
   if(method %in% c("CSS-ML", "ML")){
     aic = n*(log(2*pi) + 1 + log((rss/n))) + ((k + 1)*2)
     bic = n + n*log(2*pi) + n*log(rss/n) + log(n)*(k + 1) #4 = k + 1
@@ -173,7 +167,6 @@ arima.model = function(series, order = c(1,0,1), add.mean = TRUE, method = c("CS
   MAE.adj = (1/(n-1))*sum(abs(series[2:n] - series[1:(n-1)]))
   MASE = MAE/MAE.adj
   var.coef = fit$var.coef
-  
   error.measure = c(ME, MSE, RMSE, MAE, MAE.adj, MASE)
   names(error.measure) = c('ME', 'MSE', 'RMSE', 'MAE', 'MAE.adj', 'MASE')
   
@@ -181,10 +174,8 @@ arima.model = function(series, order = c(1,0,1), add.mean = TRUE, method = c("CS
                 coeficients = coef.fit, call = match.call(), 
                 residuals = fit$residuals, loglik = loglik, error.measure = error.measure,
                 nobs = n, sigma.squared = sigma.sq, aic = aic, bic = bic), class = "Arima")
-  
   return(output)
 }
-
 
 #--------------------------------------------------------------------------------#
 #        6. Test.box.ljung = function(series, lag, alpha = 0.05,
@@ -193,7 +184,6 @@ arima.model = function(series, order = c(1,0,1), add.mean = TRUE, method = c("CS
 
 #Ljung–Box test
 Test.box.ljung = function(series, lag, alpha = 0.05, output = TRUE, plot = FALSE, title = "Ljung Box test"){
-  
   n = length(series)
   k = lag
   p.value = vector()
@@ -204,17 +194,14 @@ Test.box.ljung = function(series, lag, alpha = 0.05, output = TRUE, plot = FALSE
     t.stat = n*(n+2)*sum(Q/d)
     p.value[i] = 1 - pchisq(t.stat , df = i)
   }
-
   if(plot){
     plot(x = 1:k, y = p.value, xlab = "lag", ylim =c(0, 1),
          ylab = "p-value", las = 1, pch = 16,bty = "n", main = title)
     abline(h = alpha, col = 'red', lty = 2, lwd = 2)}
-  
   df = data.frame(lag = 1:k, p.value = p.value)
   if(output){
   return(list(Box.Ljung.Test = df, data = series, alpha = alpha))}
 }
-
 
 #--------------------------------------------------------------------------------#
 #     7. garch.model(series, arma.order = c(0,2), 
@@ -235,7 +222,6 @@ garch.model = function(series, arma.order = c(0,2), garch.order = c(1,0),
   covariance = fit@fit$cvar
   model.coef = list(coef, matrix.coef, covariance)
   names(model.coef) = c("coeficients", 'matrix.coef', 'covariance')
-  
   residuals = fit@residuals
   method = fit@method
   call = match.call()
@@ -243,7 +229,6 @@ garch.model = function(series, arma.order = c(0,2), garch.order = c(1,0),
   description = fit@description
   data = series
   LogLikelihood = fit@fit$value
-  
   n = length(series)
   rss = sum(fit@residuals^2)
   ME = mean(fit@residuals)
@@ -259,8 +244,6 @@ garch.model = function(series, arma.order = c(0,2), garch.order = c(1,0),
   df = fit@fit$coef["shape"]
   measure = list(error.measure, aic, bic)
   names(measure) = c("error.measures", "aic", 'bic')
-  
-  
   setClass("track", slots = c(model.coef="list", measure = "list", residuals ="numeric",
                               method = 'character', call = 'call',
                               title = 'character', description = 'character',
@@ -269,6 +252,5 @@ garch.model = function(series, arma.order = c(0,2), garch.order = c(1,0),
   model = new('track', model.coef = model.coef, measure = measure, residuals = residuals,
               method = method, call = call, title = title, description = description,
               data = data, LogLikelihood = LogLikelihood, df = df)
-  
   return(model)
 }
