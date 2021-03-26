@@ -3,18 +3,13 @@
 #*******************Time series analysis of financial data**************************#
 #-----------------------------------------------------------------------------------#
 
-
-
-
 #-----------------------------------------------------------------------------------#
 #                       read data + install and load packages
 #-----------------------------------------------------------------------------------#
 
-
 #remove all objects
 remove(list = ls())
 dev.off()
-
 
 #determine directory path and library path
 dir.path = 'C:\\Users\\Himel\\OneDrive\\Studium\\M.Sc. Statistics\\1_Statistical Programming Language\\Lecture_Exercise\\Analysis\\Project_alomsafi'
@@ -34,7 +29,6 @@ install.load.packages(packages, libraryPath)
 SP500Series = read.csv(paste(dir.path, "\\Data\\SP500.csv",
                              sep = ""), sep = ",",  na.strings = "null")
 
-
 #-----------------------------------------------------------------------------------#
 #                       Data cleaning + discriptive analysis
 #-----------------------------------------------------------------------------------#
@@ -45,13 +39,11 @@ str(SP500Series)
 SP500Series$Date = as.Date(SP500Series$Date)
 #summary of the data
 summary(SP500Series[-c(1)])
-
 #Timeseries plot of stock price(s&p 500)
 ggplot2::ggplot(data = SP500Series, aes(x = Date, y = Close))+ geom_line() + 
   theme_bw() + ggExtra::removeGridX() +ggExtra::removeGridY()+ 
   ggtitle("Figure 1: Timeseries plot of stock price(s&p 500)")+
   theme(plot.title = element_text(hjust = 0.5))
-
 #log-return plot of s&p 500
 sP500.price = SP500Series$Close
 Log.Return = diff(log(sP500.price))
@@ -61,7 +53,6 @@ ggplot2::ggplot(data = Log.Return.df, aes(x = Date, y = Log.Return)) + geom_line
   ggtitle("Figure 2: log-return plot of s&p 500")+ ylab('log-return')+
   theme_bw() + ggExtra::removeGridX() +ggExtra::removeGridY()+ 
   theme(plot.title = element_text(hjust = 0.5))
-
 
 #Histogram, density and normal distribution\n of log-return of s&p 500
 x.Value = seq(min(Log.Return), max(Log.Return), length.out = length(Log.Return))
@@ -77,7 +68,6 @@ ggplot2::ggplot(df, aes(x = Log.Return)) +
   geom_line(data = df, aes(x = x.Value, y = y.Value), col = "red", size = 0.8)+
   xlim(-0.08, 0.08) + theme_bw() + ggExtra::removeGridX() +ggExtra::removeGridY()+ 
   theme(plot.title = element_text(hjust = 0.5))
-
 
 #Test of stationarity: dicky-fuller test
 #(see manually implemented function test.ADF in Function.R)
@@ -96,7 +86,6 @@ acf.sp_return = Auto.cf(Log.Return, lag = 20, type = 'acf', title = "ACF: SP500 
 acf.sp_return$acf.plot
 pacf.sp_return = Auto.cf(Log.Return, lag = 20, type = "pacf", title = "PACF: SP500 return" )
 pacf.sp_return$pacf.plot
-
 
 #-----------------------------------------------------------------------------------#
 #                                ARIMA-Model
@@ -137,7 +126,6 @@ autoplot(arma.forecast, main = "3.2: ARIMA forecasts for S&P 500 returns",
   xlab('Time') + theme_bw() + ggExtra::removeGridX() +ggExtra::removeGridY()+
   theme(plot.title = element_text(hjust = 0.5))
 
-
 #Diagonestic checking
 #ACF plot of residuals of identified model
 plot.acf = Auto.cf(series = best.Fit$residuals, lag = 20, type = 'acf',
@@ -148,7 +136,6 @@ plot.acf$acf.plot
 Test.box.ljung(series = best.Fit$residuals, lag = 10,
                alpha = 0.05, output = TRUE,  plot = TRUE,
                title = "Figure 4.2: Ljung Box test of error term")
-
 
 #Histogram, empirical and normal density of error term
 par(mfrow = c(1,2))
@@ -168,8 +155,6 @@ lines(seq(-0.04, 0.06, by= 0.0005), dnorm(seq(-0.04, 0.06, by= 0.0005),
 par(mfrow = c(1,1))
 plot(best.Fit$residuals^2, ylab = "residuals^2", ylim = c(0,0.01))
 #there exists some heterocedasticity effect
-
-
 #finding best t-GARCH-model model by parameter tuning
 #(see manually implemented function garch.model in Function.R)
 lag = 4
@@ -178,12 +163,10 @@ Order_Garch = data.frame(p = integer(lag), q = integer(lag), Log.Likelihood = do
 Order_Garch$p = c(1,2,1,2) 
 Order_Garch$q = c(1,1,2,2)
 GARCH = list()
-
 for(i in 1:lag){
   GARCH[[i]] =  garch.model(arma.order = c(0,2),
                             garch.order = c(Order_Garch$p[i],Order_Garch$q[i]),
                             series = Log.Return, cond.dist = 'std')
-  
   Order_Garch$Log.Likelihood[i] = GARCH[[i]]@LogLikelihood
   Order_Garch$AIC[i] = GARCH[[i]]@measure$aic
   Order_Garch$BIC[i] = GARCH[[i]]@measure$bic
@@ -199,17 +182,14 @@ best.Fit.tGArch = garch.model(arma.order = c(0,2),
                               series = Log.Return, cond.dist = 'std')
 #Parameter + significance
 best.Fit.tGArch@model.coef$matrix.coef #all coeficients are significant
-
 #residual check 
 #ACF plot
 plot.acf = Auto.cf(series = best.Fit.tGArch@residuals,
                    lag = 20, type = 'acf', title = 'Figure 7: ACF plot of residuals')
 plot.acf$acf.plot
-
 #Residuals plot of t-GARCH model
 plot(best.Fit.tGArch@residuals, ylab = "Residuals", 
      main = "Figure 8: Residual plot", type = 'l')
-
 #QQ-plot of Residuals
 Resid.tGarch = data.frame(Residuals =  best.Fit.tGArch@residuals)
 df = as.integer(best.Fit.tGArch@df)
